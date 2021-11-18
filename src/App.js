@@ -1,25 +1,43 @@
-import logo from './logo.svg';
 import './App.css';
+import axios from "axios";
+import { useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 
-function App() {
+
+import Landing from './pages/landing';
+import Footer from './components/footer';
+import Login from './pages/login';
+import Register from './pages/register';
+import Home from './pages/home';
+import Profile from './pages/profile';
+import Invitation from "./pages/invitation";
+
+const App = () => {
+
+  useEffect(() => {
+    axios.get("/api").then(r => {
+      console.log(r.data);
+    }).catch(e => {
+      console.log(e);
+    })
+  }, [])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/email/accept-invitation" element={<Invitation />} />
+      </Routes>
+      <Footer />
     </div>
-  );
+
+  )
+
 }
+
 
 export default App;

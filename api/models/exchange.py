@@ -20,6 +20,7 @@ class UpdateExchange(BaseModel):
     name: Optional[str] = ""
     topics: Optional[list] = []
     max_amount: float = 0.0
+    exchange_date: Optional[str] = ""
     deadline: Optional[str] = ""
     participants: Optional[list] = []
     requested: Optional[list] = []

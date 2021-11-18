@@ -217,7 +217,7 @@ def createExchange(request: Request, exInfo: NewExchange):
         # Crear la token de sesion falsa para que acepte la invitacion
         token = signForJoin(newExchange["_id"],
                             participant["email"], exInfo.deadline)
-        link = f"http://127.0.0.1:8000/api/exchanges/accept-invitation?tk={token}"
+        link = f"http://127.0.0.1:3000/email/accept-invitation?tk={token}"
         send_confirm_email(
             to=participant["email"], link=link, name=participant["name"], user=usrInfo["name"], date=exInfo.exchange_date, subject=exInfo.name, deadline=exInfo.deadline)
 
@@ -227,6 +227,51 @@ def createExchange(request: Request, exInfo: NewExchange):
 
     return JSONResponse(status_code=200, content={"message": "Se ha creado correctamente y se han enviado las invitaciones", "requested": usersToSendInvitation, "not_users": usersNotRegistered})
 
+
+@router.post("/accept-event/{id}")
+def acceptInvitationToEvent(id: str, request: Request):
+    requestInfo = validateRequest(request)
+
+    if requestInfo["status"] != 200:
+        return JSONResponse(status_code=requestInfo["status"], content={"error": requestInfo["error"]})
+
+    client = db.getMongoConn()
+    database = client["WA"]
+
+    idExchange = id
+    usrEmail = requestInfo["email"]
+
+    exInfo = database["exchanges"].find_one({"_id": idExchange})
+
+    if exInfo is None:
+        return JSONResponse(status_code=404, content={"error": "No se ha encontrado el evento especificado"})
+
+    deadline = exInfo["deadline"]
+
+    if deadline:
+        day, month, year = deadline.split("/")
+        deadlineExchange = datetime.datetime(int(year), int(month), int(day))
+        today = datetime.date.today()
+        d, m, y = today.strftime("%d/%m/%Y").split("/")
+        actualDate = datetime.datetime(int(y), int(m), int(d))
+        if actualDate > deadlineExchange:
+            return JSONResponse(status_code=401, content={"error": "La invitacion ha expirado"})
+
+    usrInfo = database["users"].find_one({"email": usrEmail})
+
+    if usrInfo is None:
+        return JSONResponse(status_code=500, content={"error": "Ha ocurrido un error al aceptar la invitacion, intente de nuevo mas tarde"})
+
+    participants = exInfo["participants"]
+    emails = [p["email"] for p in participants]
+    if usrEmail in emails:
+        return JSONResponse(status_code=200, content={"message": "Usted ya ha aceptado la invitacion"})
+
+    database["exchanges"].update_one({"_id": idExchange}, {
+                                     "$push": {"participants": {"name": usrInfo["name"], "email": usrEmail}}, "$pull": {"requested": {"name": usrInfo["name"], "email": usrEmail}}})
+    client.close()
+
+    return JSONResponse(status_code=200, content={"message": "Se ha aceptado la invitacion correctamente"})
 
 @router.get("/accept")
 def acceptInvitation(request: Request):
@@ -273,6 +318,25 @@ def acceptInvitation(request: Request):
     return JSONResponse(status_code=200, content={"message": "Se ha aceptado la invitacion correctamente"})
 
 
+@router.post("/decline-invitation")
+def declineInvitation(request: Request):
+    requestInfo = validateRequest(request)
+
+    if requestInfo["status"] != 200:
+        return JSONResponse(status_code=requestInfo["status"], content={"error": requestInfo["error"]})
+
+    client = db.getMongoConn()
+    database = client["WA"]
+
+    idExchange = requestInfo["id"]
+    usrEmail = requestInfo["email"]
+
+
+    database["exchanges"].update_one({"_id": idExchange}, {
+                                     "$pull": {"requested": {"email": usrEmail}}})
+
+    return JSONResponse(status_code=200, content={"message": "Se ha declinado la invitacion"})
+
 @router.patch("/update")
 def updateEvent(exchange: UpdateExchange, request: Request):
     requestInfo = validateRequest(request)
@@ -303,15 +367,17 @@ def updateEvent(exchange: UpdateExchange, request: Request):
         updateOps["max_amount"] = exchange.max_amount
     if exchange.deadline and exchange.deadline.strip():
         updateOps["deadline"] = exchange.deadline.strip()
+    if exchange.exchange_date and exchange.exchange_date.strip():
+        updateOps["exchange_date"] = exchange.exchange_date.strip()
     if len(exchange.participants) > 0:
         updateOps["participants"] = exchange.participants
     if len(exchange.requested) > 0:
-        # TODO Verficar para enviar los correos
         for p in exchange.requested:
             usr = database["users"].find_one({"email": p["email"]})
             if usr is None:
                 exchange.requested.remove(p)
 
+    updateOps["requested"] = exchange.requested
     if exchange.comments and exchange.comments.strip():
         updateOps["comments"] = exchange.comments.strip()
 
@@ -319,7 +385,7 @@ def updateEvent(exchange: UpdateExchange, request: Request):
         # Crear la token de sesion falsa para que acepte la invitacion
         token = signForJoin(exchange.id,
                             participant["email"], exchange.deadline)
-        link = f"http://127.0.0.1:8000/api/exchanges/accept-invitation?tk={token}"
+        link = f"http://127.0.0.1:3000/email/accept-invitation?tk={token}"
         send_confirm_email(
             to=participant["email"], link=link, name=participant["name"], user=usrInfo["name"], date=exData["exchange_date"], subject=exData["name"], deadline=exchange.deadline)
 
