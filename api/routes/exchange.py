@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from fastapi import APIRouter
 from starlette.requests import Request
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 import random_object_id
 import random
 from pprint import pprint
@@ -10,9 +11,9 @@ import string
 import datetime
 
 from config import db
-from middlewares.auth import signJWT, validateRequest, signForJoin
+from middlewares.auth import validateRequest, signForJoin
 from models.exchange import NewExchange, UpdateExchange, UpdateExchangePref
-from utils.mail import send_confirm_email
+from utils.mail import send_confirm_email, send_notification_email
 
 
 router = APIRouter(prefix="/api/exchanges")
@@ -50,8 +51,17 @@ def makeExchangeRightNow(id: str, request: Request):
     return JSONResponse(status_code=200, content={"resultados": participantsDraw})
 
 
+class ParticipantsDrawList(BaseModel):
+    participants: list
+
+
+def chunks(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+
 @router.post("/finish/{id}")
-def finishEvent(id: str, request: Request):
+def finishEvent(id: str, participants: ParticipantsDrawList, request: Request):
     requestInfo = validateRequest(request)
 
     if requestInfo["status"] != 200:
@@ -65,13 +75,42 @@ def finishEvent(id: str, request: Request):
     if exInfo["organizer"] != requestInfo["id"]:
         return JSONResponse(status_code=401, content={"error": "Usted no tiene los permisos necesarios para realizar la accion"})
 
+    intPersons = chunks(participants.participants, 2)
+
+    for x in intPersons:
+        p1 = x[0]
+        p2 = x[1]
+        today = datetime.date.today().strftime("%d/%m/%Y")
+        database["users"].find_one_and_update({"email": p1["email"]}, {"$push": {
+            "events": {
+                "name": exInfo["name"],
+                "code": exInfo["code"],
+                "date": today,
+                "friend": p2["name"],
+                "friend_email": p2["email"],
+                "topic": p2["pref"]}}})
+
+        database["users"].find_one_and_update({"email": p2["email"]}, {"$push": {
+            "events": {
+                "name": exInfo["name"],
+                "code": exInfo["code"],
+                "date": today,
+                "friend": p1["name"],
+                "friend_email": p1["email"],
+                "topic": p1["pref"]}}})
+
+        send_notification_email(p1["email"], p1["name"], p2["name"],
+                                p2["pref"] if "pref" in p2 else "", exInfo["name"])
+        send_notification_email(p2["email"], p2["name"], p1["name"],
+                                p1["pref"] if "pref" in p1 else "", exInfo["name"])
+
     update = database["exchanges"].find_one_and_update(
         {"_id": id}, {"$set": {"enabled": False}})
 
     if update is None:
         return JSONResponse(status_code=404, content={"error": "No se ha podido finalizar el evento"})
 
-    return JSONResponse(status_code=200, content={"message": "Se ha finalizado el evento correctamente"})
+    return JSONResponse(status_code=200, content={"message": "Se han eviado los correos de notificacion y se ha finalizado el evento correctamente"})
 
 
 @router.get("/list")
@@ -273,6 +312,7 @@ def acceptInvitationToEvent(id: str, request: Request):
 
     return JSONResponse(status_code=200, content={"message": "Se ha aceptado la invitacion correctamente"})
 
+
 @router.get("/accept")
 def acceptInvitation(request: Request):
     requestInfo = validateRequest(request)
@@ -331,11 +371,11 @@ def declineInvitation(request: Request):
     idExchange = requestInfo["id"]
     usrEmail = requestInfo["email"]
 
-
     database["exchanges"].update_one({"_id": idExchange}, {
                                      "$pull": {"requested": {"email": usrEmail}}})
 
     return JSONResponse(status_code=200, content={"message": "Se ha declinado la invitacion"})
+
 
 @router.patch("/update")
 def updateEvent(exchange: UpdateExchange, request: Request):

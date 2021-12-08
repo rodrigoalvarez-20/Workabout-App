@@ -72,7 +72,12 @@ def getUserInfo(request: Request):
 
     if usrInfo is not None:
         client.close()
-        return JSONResponse(status_code=200, content={"name": usrInfo["name"], "alias": usrInfo["alias"], "email": usrInfo["email"], "friends": usrInfo["friends"]})
+        events = []
+        
+        if "events" in usrInfo:
+            events = usrInfo["events"]
+        
+        return JSONResponse(status_code=200, content={"name": usrInfo["name"], "alias": usrInfo["alias"], "email": usrInfo["email"], "friends": usrInfo["friends"], "events": events})
     else:
         return JSONResponse(status_code=404, content={"error": "No se ha encontrado el usuario"})
 

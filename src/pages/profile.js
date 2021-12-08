@@ -13,6 +13,7 @@ import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
+import Accordion from "react-bootstrap/Accordion";
 import 'react-toastify/dist/ReactToastify.css';
 
 
@@ -22,6 +23,7 @@ const Profile = () => {
     const [name, setName] = useState("");
     const [alias, setAlias] = useState("");
     const [friends, setFriends] = useState([]);
+    const [eventsFinished, setEventsFinished] = useState([])
     const [isLoading, setLoadingState] = useState(true);
     const [isFormLoading, setFormLoadingState] = useState(false);
     const [addedFriends, setAddedFriends] = useState([]);
@@ -49,11 +51,12 @@ const Profile = () => {
 
     useEffect(() => {
         axios.get("/api/users/info", { headers: { "Authorization": cookies["token"] } }).then(r => {
-            const { name, alias, friends } = r.data;
+            const { name, alias, friends, events } = r.data;
             setBaseData(r.data);
             setName(name);
             setAlias(alias);
             setFriends(friends);
+            setEventsFinished(events)
             setLoadingState(false);
         }).catch(error => {
             if (error.response.data.error) {
@@ -143,7 +146,7 @@ const Profile = () => {
 
     }
 
-    const renderForm = () => {
+    function renderForm() {
         return (
             <Form className="profileForm" onSubmit={submitUpdate}>
                 <Form.Group className="mb-3">
@@ -197,6 +200,32 @@ const Profile = () => {
         )
     }
 
+    function renderUserData() {
+        return (
+            <div>
+                {renderForm()}
+                <h2>Eventos finalizados</h2>
+                <Accordion style={{ marginTop: "12px", textAlign:"start" }} flush>
+                    {
+                        eventsFinished.map((ev, idx) => {
+                            return (
+                                <Accordion.Item eventKey={`${idx}`}>
+                                    <Accordion.Header>{`Evento ${ev["name"]} - ${ev["code"]} - ${ev["date"]}`}</Accordion.Header>
+                                    <Accordion.Body>
+                                        <p>{`Amigo asignado: ${ev["friend"]}`}</p>
+                                        <p>{`Correo: ${ev["friend_email"]}`}</p>
+                                        <p>{`Tema elegido: ${ev["topic"]}`}</p>
+                                    </Accordion.Body>
+                                </Accordion.Item>
+                            )
+                        })
+                    }
+                </Accordion>
+            </div>
+        )
+    }
+
+
     return (
         <div>
             <ToastContainer
@@ -213,7 +242,7 @@ const Profile = () => {
                     <Image src={Logo} roundedCircle className="imageLogo" />
                     <h2>Perfil de usuario</h2>
                     {
-                        isLoading ? <Spinner animation="border" style={{ display: "flex", margin: "24px auto" }} /> : renderForm()
+                        isLoading ? <Spinner animation="border" style={{ display: "flex", margin: "24px auto" }} /> : renderUserData()
                     }
                 </Container>
             </div>

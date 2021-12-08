@@ -29,6 +29,7 @@ const DrawEventModal = ({ event }) => {
     const [displayAnim, setDisplayAnim] = useState(false);
 
     const [drawResults, setDrawResults] = useState([]);
+    const [orgDwRes, setOrgDwRes] = useState([])
 
     const defaultOptions = {
         loop: true,
@@ -124,6 +125,7 @@ const DrawEventModal = ({ event }) => {
         axios.post(`/api/exchanges/right-now/${event["_id"]}`, {}, { headers: { "Authorization": cookies["token"] } }).then(r => {
             if (r.data) {
                 const elements = r.data.resultados;
+                setOrgDwRes(elements);
                 var tempRes = [];
                 for (var i = 0; i < elements.length; i += 2) {
 
@@ -143,7 +145,7 @@ const DrawEventModal = ({ event }) => {
     }
 
     const finalizeEvent = () => {
-        axios.post(`/api/exchanges/finish/${event["_id"]}`, {}, { headers: { "Authorization": cookies["token"] } }).then(r => {
+        axios.post(`/api/exchanges/finish/${event["_id"]}`, { "participants": orgDwRes }, { headers: { "Authorization": cookies["token"] } }).then(r => {
             if (r.data) {
                 alert(r.data.message);
             } else {

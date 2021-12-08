@@ -33,7 +33,35 @@ def send_confirm_email(to="", link="", name="", user="", date="", subject="", de
 
     message.attach(body)
 
-# Create secure connection with server and send email
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login(sender_email, os.environ.get("GMAIL_PWD"))
+        server.sendmail(sender_email, receiver_email, message.as_string())
+        print(f"Mensaje enviado a {to}")
+
+
+def send_notification_email(to="", name="", friend = "", subject = "", intName = ""):
+    sender_email = os.environ.get("GMAIL_USER")
+    receiver_email = to
+
+    message = MIMEMultipart("alternative")
+    message["Subject"] = "Notificacion de Intercambio"
+    message["From"] = sender_email
+    message["To"] = receiver_email
+
+    html = f"""\
+    <html>
+    <body>
+        <p>Estimado usuario {name}.</br>
+        <p>Este correo es para informarle que ya se ha llevado a cabo el intercambio <b>{intName}</b> y a usted se le ha asignado la persona {friend}</p>
+        { 'La persona ha elegido el tema de <b>{0}</b>'.format(subject) if subject else 'La persona no eligió tema, por lo que sientase libre de elegir algo para ella.' }
+    </body>
+    </html>
+    """
+
+    body = MIMEText(html, "html")
+
+    message.attach(body)
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
         server.login(sender_email, os.environ.get("GMAIL_PWD"))
