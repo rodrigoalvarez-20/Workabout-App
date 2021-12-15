@@ -1,70 +1,22 @@
-# Getting Started with Create React App
+# Workabout
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Una aplicacion simple que permite realizar intercambios entre personas.
+Para poder correr el proyecto se debe de contar con Node v12.xx en adelante y con python3.
+Adicionalmente se debe de contar con VENV instalado mediante python
+**Todos el procedimiento es mediante terminal, consola o emulador de consola**
+### FrontEnd
+* Entrar en la carpeta del proyecto y ejecutar `npm i` para poder instalar todas las dependencias del proyecto de Node.
+* Despues, se deberá ejecutar `npm run start` para poder correr el cliente web
+### Backend
+* Para poder correr el back end, se deberá de abrir una nueva terminal o consola dentro de la carpeta "api" y ejecutar lo siguiente
+	`python3 -m venv venv` Esto con la finalidad de crear un entorno virtual
+	
+	`source venv/bin/activate` Para poder activar el entorno virtual
+	
+	`python3 -m pip install -r req.txt` Para poder instalar las dependencias
+	
+* Una vez instaladas las dependencias, se debe de correr el servicio web. Se puede realizar de 2 maneras
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+	`uvicorn main:app --reload` Para poder iniciar el servidor en modo desarrollo y ver los LOGS a detalle. Ademas con la bandera "reload" el servidor se recargará cada que haya un cambio en los archivos.
+	
+	`python3 main.py` Ejecutamos directamente el servidor, el cual escuchará en la direccion y puerto asignados (0.0.0.0:8000)

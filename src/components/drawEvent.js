@@ -40,6 +40,7 @@ const DrawEventModal = ({ event }) => {
         }
     };
 
+
     function renderLottieAnimation() {
         return <Lottie options={defaultOptions}
             style={{ backgroundColor: "black", borderRadius: "24px" }}
@@ -165,8 +166,10 @@ const DrawEventModal = ({ event }) => {
 
     return (
         <>
-            <Button variant="outline-warning" onClick={handleShow}>
-                Realizar
+            <Button variant="outline-warning" disabled={!event["enabled"]} onClick={handleShow}>
+                {
+                    event["enabled"] ? "Realizar" : "Finalizado"
+                }
             </Button>
 
             <Modal

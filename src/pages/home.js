@@ -192,9 +192,9 @@ const Home = () => {
                 <td>{exchange_date}</td>
                 {/* Aqui esta */}
                 <td style={{ textAlign: "center" }}><DrawEventModal event={elem} /></td>
-                <td style={{ textAlign: "center" }}><SideEventEdit btnText="Editar" btnVariant="outline-info" data={elem} /></td>
+                <td style={{ textAlign: "center" }}><SideEventEdit  btnText="Editar" btnVariant="outline-info" data={elem} /></td>
                 <td style={{ textAlign: "center" }}>{
-                    loadingDeleteEv ? <Spinner animation="grow" /> : <Button variant="outline-danger" onClick={() => deleteEvent(_id)} >Eliminar</Button>
+                    loadingDeleteEv ? <Spinner animation="grow" /> : <Button  variant="outline-danger" onClick={() => deleteEvent(_id)} >Eliminar</Button>
                 }</td>
             </tr>
         )
@@ -211,7 +211,7 @@ const Home = () => {
                 <td>${max_amount}</td>
                 <td>{exchange_date}</td>
                 <td style={{ textAlign: "center" }}>
-                    <Form.Select value={me["pref"]} onChange={(e) => updatePref(e, _id)} disabled={isDisableSelector} >
+                    <Form.Select value={me["pref"]} onChange={(e) => updatePref(e, _id)} disabled={isDisableSelector || !elem["enabled"]} >
                         <option value=""></option>
                         {
                             topics.map((t, i) => <option key={i} value={t}>{t}</option>)
@@ -221,7 +221,7 @@ const Home = () => {
                 <td style={{ textAlign: "center" }}><SideEventInfo btnText="Informacion" btnVariant="outline-info" data={elem} /></td>
                 <td style={{ textAlign: "center" }}>
                     {
-                        loadingExitInv ? <Spinner animation="grow" /> : <Button variant="outline-danger" onClick={() => exitFromEvent(_id)} >Salir</Button>
+                        loadingExitInv ? <Spinner animation="grow" /> : <Button  disabled={!elem["enabled"]} variant="outline-danger" onClick={() => exitFromEvent(_id)} >Salir</Button>
                     }
                 </td>
             </tr>

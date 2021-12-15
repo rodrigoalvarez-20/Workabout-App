@@ -212,7 +212,7 @@ const SideEventEdit = ({ btnVariant, btnText, data }) => {
 
     return (
         <>
-            <Button variant={btnVariant} onClick={toogleShow}>
+            <Button variant={btnVariant} onClick={toogleShow} disabled={!data["enabled"]}>
                 {btnText}
             </Button>
 
